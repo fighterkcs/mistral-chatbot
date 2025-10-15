@@ -1,34 +1,30 @@
 # streamlit.py
 import streamlit as st
+import os
 from config import get_mistral_answer
+from dotenv import load_dotenv
+load_dotenv()
+HF_token = os.getenv("HF_token")
 
-# -----------------------------
-# Streamlit UI
-# -----------------------------
+st.set_page_config(page_title="Mistral Chat Bot", page_icon="🤖")
 
-st.set_page_config(page_title="Mistral Chatbot", page_icon="🤖")
+st.title("🤖 Mistral Chat Bot")
 
-st.title("🤖 Mistral Chatbot")
-st.write("Ask me anything — powered by Hugging Face Mistral model!")
+st.markdown("You can ask any of your quirey here!")
+question = st.text_area("Enter your quirey here") 
 
-# 1️⃣ Token input (password style)
-HF_token = st.text_input("Enter your Hugging Face Token:", type="password")
-
-# 2️⃣ Question input
-question = st.text_area("Enter your question:")
-
-# 3️⃣ Submit button
 if st.button("Get Answer"):
-    if not HF_token:
-        st.warning("Please enter your Hugging Face token.")
-    elif not question.strip():
-        st.warning("Please enter a question.")
+    if not question.strip():
+        st.warning("Please enter a valid query.")
+    elif not HF_token:
+        st.error("No Hugging Face token found. Please check your .env file and variable name.")
     else:
-        with st.spinner("Thinking... ⏳"):
-            try:
-                answer = get_mistral_answer(HF_token, question)
-                st.success("✅ Answer received!")
+        try:
+            answer = get_mistral_answer(HF_token, question)
+            if answer:
+                st.success("Thank you for asking your query")
                 st.write(answer)
-            except Exception as e:
-                st.error(f"Error: {e}")
-                
+            else:
+                st.error("No answer received from the model. Please try again later.")
+        except Exception as e:
+            st.error(f"Error: {e}")
